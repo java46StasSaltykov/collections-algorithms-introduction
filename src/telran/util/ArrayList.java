@@ -3,38 +3,32 @@ package telran.util;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Predicate;
-
 public class ArrayList<T> implements List<T> {
-	private static final int DEFAULT_CAPACITY = 16;
-	private T[] array;
-	private int size;
-
-	@SuppressWarnings("unchecked")
-	public ArrayList(int capacity) {
-		array = (T[]) new Object[capacity];
+private static final int DEFAULT_CAPACITY = 16;
+private T[] array;
+private int size;
+@SuppressWarnings("unchecked")
+public ArrayList(int capacity) {
+	array = (T[]) new Object[capacity];
+}
+public ArrayList() {
+	this(DEFAULT_CAPACITY);
+}
+private class ArrayListIterator implements Iterator<T> {
+int currentInd = 0;
+	@Override
+	public boolean hasNext() {
+		
+		return currentInd < size;
 	}
 
-	public ArrayList() {
-		this(DEFAULT_CAPACITY);
+	@Override
+	public T next() {
+		
+		return  array[currentInd++];
 	}
-
-	private class ArrayListIterator implements Iterator<T> {
-		int currentInd = 0;
-
-		@Override
-		public boolean hasNext() {
-
-			return currentInd < size;
-		}
-
-		@Override
-		public T next() {
-
-			return array[currentInd++];
-		}
-
-	}
-
+	
+}
 	@Override
 	public boolean add(T obj) {
 		if (array.length == size) {
@@ -46,23 +40,23 @@ public class ArrayList<T> implements List<T> {
 
 	@Override
 	public boolean remove(Object pattern) {
-		// array reallocation isn't done
-		// that is new array won't be created - essence of remove
-		// to use System.arraycopy
+		//array reallocation isn't done
+		//that is new array won't be created - essence of remove
+		//to use System.arraycopy
 		// size--
 		boolean res = false;
 		int index = indexOf(pattern);
 		if (index >= 0) {
-			res = true;
+			res =true;
 			removeByIndex(index);
 		}
-
+		
 		return res;
 	}
-
+	
 	private void removeByIndex(int index) {
 		size--;
-		System.arraycopy(array, index + 1, array, index, size - index);
+		System.arraycopy(array, index+1, array, index, size - index);
 	}
 
 	@Override
@@ -79,22 +73,24 @@ public class ArrayList<T> implements List<T> {
 		return sizeOld > size;
 	}
 
+	
+
 	@Override
 	public int size() {
-
+		
 		return size;
 	}
 
 	@Override
 	public Iterator<T> iterator() {
-
+		
 		return new ArrayListIterator();
 	}
 
 	@Override
 	public boolean add(int index, T obj) {
-		// if size == array.length you should do reallocation see the method add
-		// if size < array.length new array won't be created - essence of the algorithm
+		//if size == array.length you should do reallocation see the method add
+				//if size < array.length new array won't be created - essence of the algorithm
 		boolean res = false;
 		if (index >= 0 && index <= size) {
 			res = true;
@@ -114,20 +110,19 @@ public class ArrayList<T> implements List<T> {
 		if (checkExistingIndex(index)) {
 			res = array[index];
 			removeByIndex(index);
-
+			
 		}
 		return res;
 	}
 
 	private boolean checkExistingIndex(int index) {
-
+		
 		return index >= 0 && index < size;
 	}
-
 	@Override
 	public int indexOf(Object pattern) {
 		int res = -1;
-		for (int i = 0; i < size; i++) {
+		for(int i = 0; i < size; i++) {
 			if (array[i].equals(pattern)) {
 				res = i;
 				break;
@@ -145,13 +140,12 @@ public class ArrayList<T> implements List<T> {
 				break;
 			}
 		}
-
+		
 		return res;
 	}
-
 	@Override
 	public T get(int index) {
-
+		
 		return checkExistingIndex(index) ? array[index] : null;
 	}
 
