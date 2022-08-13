@@ -13,9 +13,9 @@ import telran.util.Collection;
 
 abstract class CollectionTests {
 	protected static final int N_NUMBERS = 10000;
-	protected static final int N_RANDOM_NUMBERS = 10000;
+	protected static final int N_RANDOM_NUMBERS = 100;
 	private static final int N_RUNS = 10000;
-	private static final int N_RANDON_RUNS = 10;
+	private static final int N_RANDOM_RUNS = 10;
 	protected Collection<Integer> collection;
 
 	protected abstract Collection<Integer> createCollection();
@@ -62,16 +62,16 @@ abstract class CollectionTests {
 		// Nothing removed test
 		assertFalse(collection.removeIf(allFalsePredicate));
 		assertEquals(expected.length, collection.size());
-		/************************************************/
+		/************************************************************/
 		// even numbers removed test
-		for (int i = 0; i < N_RANDON_RUNS; i++) {
+		for (int i = 0; i < N_RANDOM_RUNS; i++) {
 			fillRandomCollection();
 			collection.removeIf(new EvenNumbersPredicate());
 			for (int num : collection) {
 				assertTrue(num % 2 == 1);
 			}
 		}
-		/************************************************/
+		/**************************************************************/
 		// All removed test
 		assertTrue(collection.removeIf(allFalsePredicate.negate()));
 		assertEquals(0, collection.size());
@@ -82,6 +82,7 @@ abstract class CollectionTests {
 		for (int i = 0; i < N_RANDOM_NUMBERS; i++) {
 			collection.add((int) (Math.random() * Integer.MAX_VALUE));
 		}
+
 	}
 
 	@Test
@@ -92,12 +93,11 @@ abstract class CollectionTests {
 
 	@Test
 	void toArrayTest() {
-		Integer expected1[] = { 10, -5, 13, 20, 40, 15 };
-		assertArrayEquals(expected1, collection.toArray(new Integer[0]));
-		assertTrue(expected1 == collection.toArray(expected1));
+		assertArrayEquals(expected, collection.toArray(new Integer[0]));
+		assertTrue(expected == collection.toArray(expected));
 		Integer expected2[] = new Integer[100];
 		assertTrue(expected2 == collection.toArray(expected2));
-		assertArrayEquals(expected1, Arrays.copyOf(expected2, collection.size()));
+		assertArrayEquals(expected, Arrays.copyOf(expected2, collection.size()));
 		for (int i = collection.size(); i < expected2.length; i++) {
 			assertNull(expected2[i]);
 		}
