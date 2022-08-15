@@ -144,5 +144,11 @@ abstract class CollectionTests {
 		}
 		assertTrue(flException);
 	}
+	
+	@Test
+	void emptyCollectionTest() {
+		collection = createCollection();
+		assertArrayEquals(new Integer[0], collection.toArray(new Integer[0]));
+	}
 
 }
