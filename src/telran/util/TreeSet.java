@@ -4,8 +4,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import javax.naming.OperationNotSupportedException;
-
 public class TreeSet<T> implements SortedSet<T> {
 	private static class Node<T> {
 		T obj;
