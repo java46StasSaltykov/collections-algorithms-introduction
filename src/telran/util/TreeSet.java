@@ -7,7 +7,6 @@ import java.util.NoSuchElementException;
 import javax.naming.OperationNotSupportedException;
 
 public class TreeSet<T> implements SortedSet<T> {
-	
 	private static class Node<T> {
 		T obj;
 		Node<T> parent;
@@ -22,20 +21,22 @@ public class TreeSet<T> implements SortedSet<T> {
 	private Node<T> root;
 	int size;
 	Comparator<T> comp;
-	
+
 	private Node<T> getLeastNodeFrom(Node<T> node) {
-		while(node.left != null) {
+		while (node.left != null) {
 			node = node.left;
 		}
 		return node;
 	}
+
 	private class TreeSetIterator implements Iterator<T> {
-		
 		Node<T> current = root == null ? null : getLeastNodeFrom(root);
-		
+		Node<T> prev = null;
+		boolean flNext = false;
+
 		@Override
 		public boolean hasNext() {
-			
+
 			return current != null;
 		}
 
@@ -44,17 +45,21 @@ public class TreeSet<T> implements SortedSet<T> {
 			if (!hasNext()) {
 				throw new NoSuchElementException();
 			}
+			prev = current;
 			T res = current.obj;
 			updateCurrent();
+			flNext = true;
 			return res;
 		}
+
 		private void updateCurrent() {
 			current = current.right != null ? getLeastNodeFrom(current.right) : getGreaterParent(current);
+
 		}
 
 		private Node<T> getGreaterParent(Node<T> node) {
-			
-			while(node.parent != null && node.parent.left != node) {
+
+			while (node.parent != null && node.parent.left != node) {
 				node = node.parent;
 			}
 			return node.parent;
@@ -62,39 +67,39 @@ public class TreeSet<T> implements SortedSet<T> {
 
 		@Override
 		public void remove() {
-			if (!hasNext()) {
+			if (!flNext) {
 				throw new IllegalStateException();
 			}
-			Node<T> prevNode = getLeastNodeFrom(current) != null ? getLeastNodeFrom(current) : current.parent;
-			if (!isJunction(prevNode)) {
-				TreeSet.this.remove(prevNode);
-			} else {
-				TreeSet.this.remove(current);
+			if (isJunction(prev)) {
+				current = prev;
 			}
-			
-			size--;
+			removeNode(prev);
+			flNext = false;
 		}
-		
+
 	}
+
 	public TreeSet(Comparator<T> comp) {
 		this.comp = comp;
 	}
+
 	@SuppressWarnings("unchecked")
 	public TreeSet() {
-		this((Comparator<T>)Comparator.naturalOrder());
+		this((Comparator<T>) Comparator.naturalOrder());
 	}
+
 	@Override
 	public boolean add(T obj) {
 		Node<T> parent = getNodeOrParent(obj);
 		boolean res = false;
 		int compRes = 0;
 		if (parent == null || (compRes = comp.compare(obj, parent.obj)) != 0) {
-			//obj doesn't exist
+			// obj doesn't exist
 			Node<T> newNode = new Node<>(obj);
 			if (parent == null) {
-				//added first element that is the root
+				// added first element that is the root
 				root = newNode;
-			} else if(compRes > 0) {
+			} else if (compRes > 0) {
 				parent.right = newNode;
 			} else {
 				parent.left = newNode;
@@ -120,90 +125,76 @@ public class TreeSet<T> implements SortedSet<T> {
 		}
 		return parent;
 	}
-	
+
 	@Override
 	public boolean remove(Object pattern) {
-		Node<T> node = getNodeOrParent((T) pattern);
 		boolean res = false;
-		boolean junction = isJunction(node);
-		if (junction == true) {
-			removeJunctionNode(node);
+		@SuppressWarnings("unchecked")
+		T patternT = (T) pattern;
+		Node<T> node = getNodeOrParent(patternT);
+		if (node != null && comp.compare(node.obj, patternT) == 0) {
 			res = true;
-		} else {
-			removeNonJunctionNode(node);
-			res = true;
+			removeNode(node);
 		}
+
 		return res;
 	}
 
 	private void removeNode(Node<T> node) {
-		if (node.parent.left == node) {
-			node.parent.left = null;
-		} else if (node.parent.right == node) {
-			node.parent.right = null;
-		}
-	}
-	private void removeNonJunctionNode(Node<T> node) {
-		if (node.left == null && node.right != null) {
-			node.parent.right = node.right;
-		} else if (node.right == null && node.left != null) {
-			node.parent.right = node.left;
-		} else if (node.right == null && node.left == null) {
-			removeNode(node);
-		}
-		size--;
-	}
-	private void removeJunctionNode(Node<T> node) {
-		if (node == root && node.left != null) {
-			node = node.left;
-		} else if (node == root && node.right != null) {
-			node = node.right;
+		if (isJunction(node)) {
+			removeJunctionNode(node);
 		} else {
-			node = null;
+			removeNonJunctionNode(node);
 		}
-		
-		if (node.right != null && node.left != null) {
-			node.parent.right = node.right;
-			node.parent.left = node.left;
-		} else if (node.right != null && node.left == null) {
-			node.parent.right = node.right;
-		} else if (node.right == null && node.left != null) {
-			node.parent.left = node.left;
-		}
-		
 		size--;
-	}
-	private boolean isJunction(Node<T> node) {
-		boolean res = false;
-		if (node.left != null && node.right != null) {
-			res = true;
-		}
-		return res;
 	}
 
-	
-	@SuppressWarnings("rawtypes")
-	@Override
-	public boolean contains(Object pattern) {
-		boolean res = false;
-		Iterator it = new TreeSetIterator();
-		while (it.hasNext()) {
-			if (it.next() == pattern) {
-				res = true;
+	private void removeNonJunctionNode(Node<T> node) {
+		Node<T> child = node.left == null ? node.right : node.left;
+		Node<T> parent = node.parent;
+		if (parent == null) {
+			root = child;
+		} else {
+			if (parent.left == node) {
+				parent.left = child;
+			} else {
+				parent.right = child;
 			}
 		}
-		return res;
+		if (child != null) {
+			child.parent = parent;
+		}
+	}
+
+	private void removeJunctionNode(Node<T> node) {
+		Node<T> substitution = getLeastNodeFrom(node.right);
+		node.obj = substitution.obj;
+		removeNonJunctionNode(substitution);
+
+	}
+
+	private boolean isJunction(Node<T> node) {
+
+		return node.left != null && node.right != null;
+	}
+
+	@Override
+	public boolean contains(Object pattern) {
+		@SuppressWarnings("unchecked")
+		T tPattern = (T) pattern;
+		Node<T> node = getNodeOrParent(tPattern);
+		return node != null && comp.compare(tPattern, node.obj) == 0;
 	}
 
 	@Override
 	public int size() {
-		
+
 		return size;
 	}
 
 	@Override
 	public Iterator<T> iterator() {
-		
+
 		return new TreeSetIterator();
 	}
 
@@ -222,9 +213,9 @@ public class TreeSet<T> implements SortedSet<T> {
 		}
 		return getMostNodeFrom(root).obj;
 	}
-	
+
 	private Node<T> getMostNodeFrom(Node<T> node) {
-		while(node.right != null) {
+		while (node.right != null) {
 			node = node.right;
 		}
 		return node;
