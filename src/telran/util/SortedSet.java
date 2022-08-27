@@ -12,4 +12,8 @@ public interface SortedSet<T> extends Set<T> {
 	 * @return reference to the most object
 	 */
 	T last();
+	
+	T ceiling(T pattern);
+	
+	T floor(T pattern);
 }
