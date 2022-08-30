@@ -2,7 +2,10 @@ package telran.util;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public interface Collection<T> extends Iterable<T> {
 /**
@@ -76,4 +79,32 @@ public interface Collection<T> extends Iterable<T> {
 		// reference to the same array will be returned
 		return ar;
 	}
+	
+	default Stream<T> stream() {
+		return StreamSupport.stream(spliterator(), false);
+	}
+	
+	default void clean() {
+		removeIf(n -> true);
+	}
+	
+	default T[] toShuffleArray(T[] array) {
+		final T[] arraySh = toArray(array);
+		T[] copy = Arrays.copyOf(arraySh, arraySh.length);
+		int[] index = new Random().ints(0, copy.length).distinct().limit(copy.length).toArray();
+		for (int i = copy.length - 1; i > 0; i--) {
+			swap(copy, i, index[i]);
+		}
+		return copy;
+	}
+	
+    private static <T> void swap(T[] arr, int i, int j) {
+        T tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
+    }
 }
+
+
+
+
