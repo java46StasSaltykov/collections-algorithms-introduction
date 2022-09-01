@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.IntSummaryStatistics;
 import java.util.Iterator;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
@@ -175,7 +176,7 @@ abstract class CollectionTests {
 	void shuffleTest() {
 		int size = collection.size();
 		Integer array[] = collection.toArray(new Integer[0]);
-		Integer arraySh[] = collection.toShuffleArray(array);
+		Integer arraySh [] = collection.toShuffleArray(new Integer[0]);
 		assertFalse(Arrays.equals(array, arraySh));
 		collection = new HashSet<Integer>();
 		fillCollection(arraySh);
@@ -186,12 +187,10 @@ abstract class CollectionTests {
 	void streamTest() {
 		assertEquals(93, collection.stream().mapToInt(x -> x).sum());
 		assertArrayEquals(new Integer[] {-5}, collection.stream()
-				.filter(n -> n < 0).toArray(s -> new Integer[s]));
-		
-		IntStream minMaxValues = collection.stream().mapToInt(x -> x)
-				.filter(x -> x == collection.stream().mapToInt(y -> y).sorted().toArray()[0] || x == collection.stream().mapToInt(y -> y).sorted().toArray()[collection.size() - 1]);
-
-		assertArrayEquals(new int[] {-5, 40}, minMaxValues.toArray());
+				.filter(n -> n < 0).toArray(size -> new Integer[size]));
+		IntSummaryStatistics summary = collection.stream().mapToInt(x -> x).summaryStatistics();
+		assertEquals(-5, summary.getMin());
+		assertEquals(40, summary.getMax());
 	}
 
 }
